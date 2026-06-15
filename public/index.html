@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="ClearMandate turns agent purchasing intent into verified, policy-bound payments."
+    />
+    <title>ClearMandate</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="ambient ambient-one"></div>
+    <div class="ambient ambient-two"></div>
+
+    <header class="topbar">
+      <a class="brand" href="/" aria-label="ClearMandate home">
+        <span class="brand-mark">CM</span>
+        <span>ClearMandate</span>
+      </a>
+      <div class="topbar-right">
+        <span class="network-pill">
+          <span class="pulse"></span>
+          Monad testnet
+        </span>
+        <button class="ghost-button" id="connect-wallet" type="button">
+          Connect wallet
+        </button>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div>
+          <p class="eyebrow">Trusted agent commerce</p>
+          <h1>Give an agent a mandate.<br />Keep control of every payment.</h1>
+          <p class="hero-copy">
+            ClearMandate verifies identity, enforces delegated spending rules,
+            and produces evidence before an AI agent moves compliant funds.
+          </p>
+        </div>
+        <div class="trust-summary" aria-label="Trust stack summary">
+          <div>
+            <span>Identity</span>
+            <strong>A-Pass</strong>
+          </div>
+          <div>
+            <span>Settlement</span>
+            <strong>A-Token</strong>
+          </div>
+          <div>
+            <span>Evidence</span>
+            <strong>CCP-ready</strong>
+          </div>
+        </div>
+      </section>
+
+      <section class="workspace">
+        <aside class="mandate-panel panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">01 / Delegation</p>
+              <h2>Agent mandate</h2>
+            </div>
+            <span class="status-chip status-active">Active</span>
+          </div>
+
+          <form id="mandate-form">
+            <label>
+              Principal wallet
+              <div class="input-with-action">
+                <input
+                  id="principal-wallet"
+                  name="principalWallet"
+                  autocomplete="off"
+                  value="0x1111111111111111111111111111111111111111"
+                  required
+                />
+                <button id="use-wallet" type="button">Use wallet</button>
+              </div>
+            </label>
+
+            <div class="field-row">
+              <label>
+                Spend limit
+                <div class="input-suffix">
+                  <input
+                    name="maxAmount"
+                    type="number"
+                    min="1"
+                    step="0.01"
+                    value="100"
+                    required
+                  />
+                  <span>aUSDC</span>
+                </div>
+              </label>
+              <label>
+                Approval above
+                <div class="input-suffix">
+                  <input
+                    name="approvalThreshold"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value="75"
+                    required
+                  />
+                  <span>aUSDC</span>
+                </div>
+              </label>
+            </div>
+
+            <label>
+              Permitted category
+              <select name="category">
+                <option value="cloud">Cloud infrastructure</option>
+                <option value="data">Data and APIs</option>
+                <option value="software">Software subscriptions</option>
+              </select>
+            </label>
+
+            <label>
+              Approved vendor
+              <select name="vendor">
+                <option value="NovaCompute">NovaCompute</option>
+                <option value="VectorAPI">VectorAPI</option>
+                <option value="AtlasData">AtlasData</option>
+              </select>
+            </label>
+
+            <label>
+              Mandate expires
+              <input name="expiresAt" id="expires-at" type="datetime-local" required />
+            </label>
+
+            <div class="mode-switch" role="group" aria-label="Execution mode">
+              <button class="mode-option selected" data-mode="demo" type="button">
+                <strong>Demo mode</strong>
+                <span>Deterministic trust checks</span>
+              </button>
+              <button class="mode-option" data-mode="live" type="button">
+                <strong>Live sandbox</strong>
+                <span>Cleanverse V5 calls</span>
+              </button>
+            </div>
+          </form>
+        </aside>
+
+        <section class="execution-panel panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">02 / Agent action</p>
+              <h2>Procurement request</h2>
+            </div>
+            <span class="status-chip" id="api-status">Checking API</span>
+          </div>
+
+          <form id="proposal-form">
+            <label>
+              Agent instruction
+              <textarea
+                name="instruction"
+                rows="3"
+              >Purchase 80 aUSDC of cloud credits from NovaCompute.</textarea>
+            </label>
+
+            <div class="proposal-grid">
+              <label>
+                Amount
+                <div class="input-suffix">
+                  <input
+                    name="amount"
+                    type="number"
+                    min="0.01"
+                    step="0.01"
+                    value="80"
+                    required
+                  />
+                  <span>aUSDC</span>
+                </div>
+              </label>
+              <label>
+                Counterparty wallet
+                <input
+                  name="counterpartyWallet"
+                  value="0x2222222222222222222222222222222222222222"
+                  autocomplete="off"
+                  required
+                />
+              </label>
+            </div>
+
+            <button class="primary-button" id="run-agent" type="submit">
+              <span>Run verified purchase</span>
+              <span aria-hidden="true">→</span>
+            </button>
+          </form>
+
+          <div class="empty-state" id="empty-state">
+            <div class="empty-orbit">
+              <span></span><span></span><span></span>
+            </div>
+            <h3>Ready to evaluate</h3>
+            <p>
+              The agent will discover the compliant token, verify both wallets,
+              evaluate the mandate, and prepare settlement evidence.
+            </p>
+          </div>
+
+          <div class="run-result hidden" id="run-result">
+            <div class="decision-banner" id="decision-banner">
+              <div>
+                <p class="eyebrow">Decision</p>
+                <h3 id="decision-title">Approval required</h3>
+              </div>
+              <span id="decision-code">HUMAN / 01</span>
+            </div>
+
+            <ol class="check-list" id="check-list"></ol>
+
+            <div class="settlement-card">
+              <div>
+                <p class="eyebrow">Settlement</p>
+                <h3 id="settlement-title">Waiting for authorization</h3>
+                <p id="settlement-note"></p>
+              </div>
+              <button class="approval-button hidden" id="approve-button" type="button">
+                Approve payment
+              </button>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <section class="evidence-section">
+        <div>
+          <p class="eyebrow">03 / Evidence</p>
+          <h2>Every decision leaves a receipt.</h2>
+        </div>
+        <div class="evidence-rail">
+          <div>
+            <span>Mandate</span>
+            <strong id="evidence-mandate">Not evaluated</strong>
+          </div>
+          <div>
+            <span>Identity</span>
+            <strong id="evidence-identity">Not verified</strong>
+          </div>
+          <div>
+            <span>Policy</span>
+            <strong id="evidence-policy">Not evaluated</strong>
+          </div>
+          <div>
+            <span>Settlement</span>
+            <strong id="evidence-settlement">Not started</strong>
+          </div>
+        </div>
+        <button class="download-button" id="download-receipt" type="button" disabled>
+          Download audit receipt
+        </button>
+      </section>
+    </main>
+
+    <div class="toast hidden" id="toast" role="status"></div>
+
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>
+
