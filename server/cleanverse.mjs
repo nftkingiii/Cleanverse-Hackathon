@@ -22,6 +22,7 @@ async function post(endpoint, payload, { encrypted = false } = {}) {
       }
     : payload;
 
+  const requestId = randomUUID();
   let response;
   try {
     response = await fetch(`${config.cleanverse.baseUrl}${endpoint}`, {
@@ -29,7 +30,7 @@ async function post(endpoint, payload, { encrypted = false } = {}) {
       headers: {
         "Content-Type": "application/json",
         "api-id": config.cleanverse.appId,
-        "X-Request-ID": randomUUID(),
+        "X-Request-ID": requestId,
       },
       body: JSON.stringify(body),
       signal: AbortSignal.timeout(15_000),
@@ -56,6 +57,7 @@ async function post(endpoint, payload, { encrypted = false } = {}) {
       result.message || `Cleanverse request failed with HTTP ${response.status}.`,
       {
         endpoint,
+        requestId,
         status: response.status,
         code: result.code,
         data: result.data,

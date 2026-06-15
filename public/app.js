@@ -320,7 +320,11 @@ async function generateAPass(event) {
     await checkAPass({ quiet: true });
   } catch (error) {
     apassStatus.textContent = "Registration failed";
-    showToast(error.message);
+    const message = /system error|0002/i.test(error.message)
+      ? "Cleanverse could not process the identity record. Verify every field and retry with the ID number included."
+      : error.message;
+    apassNote.textContent = message;
+    showToast(message);
   } finally {
     generateAPassButton.disabled = false;
     generateAPassButton.querySelector("span").textContent = "Register A-Pass";

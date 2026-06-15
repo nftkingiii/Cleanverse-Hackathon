@@ -31,11 +31,18 @@ export function buildAPassPayload(input, now = Date.now()) {
   }
 
   const normalizedAddress = address.toLowerCase();
+  const customerId = createHash("sha256")
+    .update(`clearmandate:${normalizedAddress}`)
+    .digest("hex")
+    .slice(0, 16)
+    .split("")
+    .map((character) => (Number.parseInt(character, 16) % 10).toString())
+    .join("");
+
   return {
-    customerId: `clearmandate-${normalizedAddress.slice(2)}`,
-    kycSource: "Cleanverse Hackathon",
-    subTier: 1,
-    subGroup: "AI",
+    customerId,
+    subTier: 9,
+    subGroup: "CD",
     override: false,
     expirationTime: Math.floor(now / 1000) + 365 * 24 * 60 * 60,
     wallet: {
@@ -50,5 +57,7 @@ export function buildAPassPayload(input, now = Date.now()) {
         ...(idNumber ? { idNumber } : {}),
       },
     ],
+    bankAccountList: [],
   };
 }
+import { createHash } from "node:crypto";
