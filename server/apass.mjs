@@ -1,3 +1,5 @@
+import { createHash } from "node:crypto";
+
 const ADDRESS_PATTERN = /^0x[a-fA-F0-9]{40}$/;
 const COUNTRY_PATTERN = /^[A-Z]{2}$/;
 const ID_TYPES = new Set([
@@ -31,6 +33,9 @@ export function buildAPassPayload(input, now = Date.now()) {
   }
 
   const normalizedAddress = address.toLowerCase();
+  const validUntil = new Date(now + 365 * 24 * 60 * 60 * 1000)
+    .toISOString()
+    .slice(0, 10);
   const customerId = createHash("sha256")
     .update(`clearmandate:${normalizedAddress}`)
     .digest("hex")
@@ -54,10 +59,9 @@ export function buildAPassPayload(input, now = Date.now()) {
         idType,
         fullName,
         issuingCountryISO2,
+        validUntil,
         ...(idNumber ? { idNumber } : {}),
       },
     ],
-    bankAccountList: [],
   };
 }
-import { createHash } from "node:crypto";

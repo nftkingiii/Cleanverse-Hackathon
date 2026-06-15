@@ -18,10 +18,11 @@ test("builds the generate A-Pass request payload", () => {
   assert.equal(payload.identityDataList[0].idType, "PASSPORT");
   assert.equal(payload.identityDataList[0].issuingCountryISO2, "NG");
   assert.equal(payload.identityDataList[0].idNumber, undefined);
+  assert.equal(payload.identityDataList[0].validUntil, "2024-11-13");
   assert.equal(payload.subTier, 9);
   assert.equal(payload.subGroup, "CD");
   assert.match(payload.customerId, /^\d{16}$/);
-  assert.deepEqual(payload.bankAccountList, []);
+  assert.equal(payload.bankAccountList, undefined);
 });
 
 test("rejects invalid A-Pass identity input", () => {

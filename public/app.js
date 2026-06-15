@@ -134,7 +134,9 @@ async function request(path, options = {}) {
   const result = await response.json();
   if (!response.ok) {
     const detail = result.details?.code ? ` (${result.details.code})` : "";
-    throw new Error(`${result.error || "Request failed"}${detail}`);
+    const error = new Error(`${result.error || "Request failed"}${detail}`);
+    error.details = result.details || {};
+    throw error;
   }
   return result;
 }
@@ -320,8 +322,11 @@ async function generateAPass(event) {
     await checkAPass({ quiet: true });
   } catch (error) {
     apassStatus.textContent = "Registration failed";
+    const requestReference = error.details?.requestId
+      ? ` Reference: ${error.details.requestId}.`
+      : "";
     const message = /system error|0002/i.test(error.message)
-      ? "Cleanverse could not process the identity record. Verify every field and retry with the ID number included."
+      ? `Cleanverse returned an internal processing error.${requestReference}`
       : error.message;
     apassNote.textContent = message;
     showToast(message);
