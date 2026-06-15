@@ -5,7 +5,7 @@ import { evaluateMandate } from "../server/policy.mjs";
 
 const mandate = {
   chain: "monad",
-  principalWallet: "0x1111111111111111111111111111111111111111",
+  principalWallet: "0xc6cfa54eda215a62fd5495a9b6555bd85b6b7ddb",
   maxAmount: 100,
   approvalThreshold: 75,
   allowedCategories: ["cloud"],
@@ -50,4 +50,3 @@ test("blocks a failed live A-Pass verification", () => {
   assert.equal(result.decision, "blocked");
   assert.ok(result.blockers.includes("counterparty-apass"));
 });
-

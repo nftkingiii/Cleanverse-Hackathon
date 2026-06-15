@@ -4,6 +4,9 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { cleanverse, CleanverseError } from "./server/cleanverse.mjs";
+import { planProcurement, vendorCatalog } from "./server/agent.mjs";
+import { buildAPassPayload } from "./server/apass.mjs";
+import { publicChainConfig } from "./server/chain.mjs";
 import { config, publicConfig } from "./server/config.mjs";
 import { demoTokens, demoVerification } from "./server/demo.mjs";
 import { evaluateMandate } from "./server/policy.mjs";
@@ -56,7 +59,9 @@ function cleanverseErrorResponse(error) {
 }
 
 async function runMandate(body) {
-  const { mode = "demo", mandate, proposal } = body;
+  const { mode = "demo", mandate } = body;
+  const agentPlan = planProcurement(body.proposal?.instruction, body.proposal);
+  const proposal = agentPlan.proposal;
   let tokens = demoTokens;
   let trust = {
     mode: "demo",
@@ -103,6 +108,7 @@ async function runMandate(body) {
     mode,
     mandate,
     proposal,
+    agentPlan,
     token: tokens.data?.tokens?.[0] || null,
     trust,
     evaluation,
@@ -130,6 +136,18 @@ async function handleApi(request, response, pathname) {
     });
   }
 
+  if (request.method === "GET" && pathname === "/api/catalog") {
+    return sendJson(response, 200, { vendors: vendorCatalog() });
+  }
+
+  if (request.method === "GET" && pathname === "/api/chain") {
+    return sendJson(
+      response,
+      200,
+      publicChainConfig(demoTokens.data.tokens[0]),
+    );
+  }
+
   if (request.method !== "POST") {
     return sendJson(response, 405, { error: "Method not allowed." });
   }
@@ -140,14 +158,35 @@ async function handleApi(request, response, pathname) {
     if (pathname === "/api/mandates/run") {
       return sendJson(response, 200, await runMandate(body));
     }
+    if (pathname === "/api/agent/plan") {
+      return sendJson(
+        response,
+        200,
+        planProcurement(body.instruction, body.context),
+      );
+    }
     if (pathname === "/api/cleanverse/tokens") {
       return sendJson(response, 200, await cleanverse.querySupportedTokens(body));
     }
     if (pathname === "/api/cleanverse/apass/query") {
       return sendJson(response, 200, await cleanverse.queryAPass(body));
     }
+    if (pathname === "/api/cleanverse/deposit-address") {
+      return sendJson(
+        response,
+        200,
+        await cleanverse.queryDepositAddress(body),
+      );
+    }
     if (pathname === "/api/cleanverse/apass/verify") {
       return sendJson(response, 200, await cleanverse.verifyAPass(body));
+    }
+    if (pathname === "/api/cleanverse/apass/generate") {
+      return sendJson(
+        response,
+        200,
+        await cleanverse.generateAPass(buildAPassPayload(body)),
+      );
     }
     if (pathname === "/api/cleanverse/transactions") {
       return sendJson(response, 200, await cleanverse.queryTransactions(body));
@@ -201,7 +240,21 @@ const server = http.createServer(async (request, response) => {
   }
 });
 
-server.listen(config.port, () => {
-  console.log(`ClearMandate is running at http://localhost:${config.port}`);
+server.on("error", (error) => {
+  if (error.code === "EADDRINUSE") {
+    console.error(
+      `Port ${config.port} is already in use. Stop the existing server or set a different PORT in .env.local.`,
+    );
+    process.exitCode = 1;
+    return;
+  }
+
+  console.error("ClearMandate server failed:", error);
+  process.exitCode = 1;
 });
 
+server.listen(config.port, config.host, () => {
+  console.log(
+    `ClearMandate is running at http://${config.host}:${config.port}`,
+  );
+});

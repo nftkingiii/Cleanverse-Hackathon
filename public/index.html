@@ -56,6 +56,67 @@
         </div>
       </section>
 
+      <section class="identity-console panel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">00 / Identity setup</p>
+            <h2>Register the principal A-Pass</h2>
+          </div>
+          <span class="status-chip" id="apass-status">Not checked</span>
+        </div>
+        <p class="identity-intro">
+          The hackathon credential can issue an A-Pass directly. Identity data
+          is encrypted server-side and is not stored by ClearMandate.
+        </p>
+        <form class="identity-form" id="apass-form">
+          <label>
+            Full legal name
+            <input
+              name="fullName"
+              autocomplete="name"
+              placeholder="Name shown on your ID"
+              required
+            />
+          </label>
+          <label>
+            ID type
+            <select name="idType">
+              <option value="OTHER">Other</option>
+              <option value="NID">National ID</option>
+              <option value="PASSPORT">Passport</option>
+              <option value="DRIVER_LICENSE">Driver license</option>
+            </select>
+          </label>
+          <label>
+            Issuing country
+            <input
+              name="issuingCountryISO2"
+              value="NG"
+              maxlength="2"
+              pattern="[A-Za-z]{2}"
+              autocomplete="country"
+              required
+            />
+          </label>
+          <label>
+            ID number <span class="optional">(optional)</span>
+            <input name="idNumber" autocomplete="off" />
+          </label>
+          <div class="identity-actions">
+            <button class="secondary-button" id="check-apass" type="button">
+              Check A-Pass
+            </button>
+            <button class="primary-button compact" id="generate-apass" type="submit">
+              <span>Register A-Pass</span><span>-&gt;</span>
+            </button>
+          </div>
+        </form>
+        <p class="console-note" id="apass-note">
+          Use accurate identity details. The ID number is optional under the
+          Cleanverse V5 request schema.
+        </p>
+      </section>
+
       <section class="workspace">
         <aside class="mandate-panel panel">
           <div class="panel-heading">
@@ -74,7 +135,7 @@
                   id="principal-wallet"
                   name="principalWallet"
                   autocomplete="off"
-                  value="0x1111111111111111111111111111111111111111"
+                  value="0xc6cfa54eda215a62fd5495a9b6555bd85b6b7ddb"
                   required
                 />
                 <button id="use-wallet" type="button">Use wallet</button>
@@ -123,10 +184,10 @@
 
             <label>
               Approved vendor
-              <select name="vendor">
-                <option value="NovaCompute">NovaCompute</option>
-                <option value="VectorAPI">VectorAPI</option>
-                <option value="AtlasData">AtlasData</option>
+              <select name="vendor" id="vendor-select">
+                <option value="NovaCompute">NovaCompute / cloud compute</option>
+                <option value="VectorAPI">VectorAPI / retrieval APIs</option>
+                <option value="AtlasData">AtlasData / verified datasets</option>
               </select>
             </label>
 
@@ -194,9 +255,20 @@
 
             <button class="primary-button" id="run-agent" type="submit">
               <span>Run verified purchase</span>
-              <span aria-hidden="true">→</span>
+              <span aria-hidden="true">-&gt;</span>
             </button>
           </form>
+
+          <div class="agent-trace hidden" id="agent-trace">
+            <div class="trace-heading">
+              <div>
+                <p class="eyebrow">Agent plan</p>
+                <h3 id="agent-objective">Preparing tools</h3>
+              </div>
+              <span id="agent-confidence">--</span>
+            </div>
+            <ol id="agent-tools"></ol>
+          </div>
 
           <div class="empty-state" id="empty-state">
             <div class="empty-orbit">
@@ -230,13 +302,83 @@
                 Approve payment
               </button>
             </div>
+
+            <div class="wallet-console" id="wallet-console">
+              <div class="console-heading">
+                <div>
+                  <p class="eyebrow">Wallet execution</p>
+                  <h3>Monad settlement console</h3>
+                </div>
+                <button class="ghost-button" id="refresh-balances" type="button">
+                  Refresh balances
+                </button>
+              </div>
+              <div class="wallet-stats">
+                <div><span>Network</span><strong id="wallet-network">Not connected</strong></div>
+                <div><span>USDC</span><strong id="usdc-balance">--</strong></div>
+                <div><span>aUSDC</span><strong id="ausdc-balance">--</strong></div>
+                <div><span>Gas</span><strong id="mon-balance">-- MON</strong></div>
+              </div>
+              <div class="wallet-actions">
+                <button class="secondary-button" id="switch-network" type="button">
+                  Switch to Monad
+                </button>
+                <button class="secondary-button" id="deposit-usdc" type="button">
+                  Deposit USDC for aUSDC
+                </button>
+                <button class="primary-button compact" id="send-payment" type="button">
+                  <span>Sign aUSDC payment</span><span>-&gt;</span>
+                </button>
+              </div>
+              <p class="console-note" id="wallet-note">
+                Wallet actions are explicit. ClearMandate never stores a private
+                key or signs silently.
+              </p>
+            </div>
           </div>
         </section>
       </section>
 
+      <section class="evidence-console panel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">03 / Reconciliation</p>
+            <h2>Transaction evidence</h2>
+          </div>
+          <button class="ghost-button" id="lookup-transaction" type="button">
+            Query Cleanverse
+          </button>
+        </div>
+        <div class="evidence-inputs">
+          <label>
+            Transaction hash
+            <input id="transaction-hash" placeholder="0x..." autocomplete="off" />
+          </label>
+          <label>
+            Transaction type
+            <select id="transaction-type">
+              <option value="transfer">aUSDC transfer</option>
+              <option value="deposit">USDC deposit</option>
+              <option value="withdraw">Withdrawal</option>
+            </select>
+          </label>
+        </div>
+        <div class="transaction-result" id="transaction-result">
+          <p>No transaction has been reconciled yet.</p>
+        </div>
+        <div class="evidence-actions">
+          <button class="secondary-button" id="open-explorer" type="button" disabled>
+            Open explorer
+          </button>
+          <button class="secondary-button" id="get-report" type="button" disabled>
+            Get transaction report
+          </button>
+        </div>
+      </section>
+
       <section class="evidence-section">
         <div>
-          <p class="eyebrow">03 / Evidence</p>
+          <p class="eyebrow">04 / Evidence</p>
           <h2>Every decision leaves a receipt.</h2>
         </div>
         <div class="evidence-rail">
@@ -268,4 +410,3 @@
     <script type="module" src="/app.js"></script>
   </body>
 </html>
-

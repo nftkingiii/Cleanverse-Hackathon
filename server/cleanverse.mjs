@@ -78,6 +78,17 @@ export const cleanverse = {
     return post("/query_apass", { chain, address });
   },
 
+  queryDepositAddress({ chain, address }) {
+    return post("/query_deposit_address", { chain, address });
+  },
+
+  queryInstitutionWhitelist({ chain, symbol }) {
+    return post("/query_institution_white_list", {
+      chain,
+      ...(symbol ? { symbol } : {}),
+    });
+  },
+
   verifyAPass({ chain, atoken, address }) {
     return post("/verify_apass", { chain, atoken, address });
   },
@@ -119,4 +130,3 @@ export const cleanverse = {
     return post("/generate_apass", payload, { encrypted: true });
   },
 };
-

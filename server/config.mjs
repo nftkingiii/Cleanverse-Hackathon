@@ -21,6 +21,7 @@ const localEnv = parseEnvFile(path.resolve(".env.local"));
 const env = { ...localEnv, ...process.env };
 
 export const config = {
+  host: env.HOST || "127.0.0.1",
   port: Number(env.PORT || 4173),
   cleanverse: {
     baseUrl:
@@ -42,4 +43,3 @@ export function publicConfig() {
     ),
   };
 }
-
