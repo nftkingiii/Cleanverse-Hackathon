@@ -5,408 +5,174 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="ClearMandate turns agent purchasing intent into verified, policy-bound payments."
+      content="ClearMandate gives AI agents verified identity, policy-bound authority, and compliant settlement."
     />
-    <title>ClearMandate</title>
+    <title>ClearMandate — Trusted agent commerce</title>
     <link rel="stylesheet" href="/styles.css" />
   </head>
-  <body>
-    <div class="ambient ambient-one"></div>
-    <div class="ambient ambient-two"></div>
-
-    <header class="topbar">
+  <body class="landing-body">
+    <header class="landing-nav">
       <a class="brand" href="/" aria-label="ClearMandate home">
         <span class="brand-mark">CM</span>
         <span>ClearMandate</span>
       </a>
-      <div class="topbar-right">
-        <span class="network-pill">
-          <span class="pulse"></span>
-          Monad testnet
-        </span>
-        <button class="ghost-button" id="connect-wallet" type="button">
-          Connect wallet
-        </button>
-      </div>
+      <nav class="landing-links" aria-label="Main navigation">
+        <a href="#protocol">Protocol</a>
+        <a href="#workflow">Workflow</a>
+        <a href="#evidence">Evidence</a>
+      </nav>
+      <a class="nav-cta" href="/app.html">
+        <span>Launch app</span>
+        <span class="button-icon" aria-hidden="true">↗</span>
+      </a>
     </header>
 
-    <main>
-      <section class="hero">
-        <div>
-          <p class="eyebrow">Trusted agent commerce</p>
-          <h1>Give an agent a mandate.<br />Keep control of every payment.</h1>
+    <main class="landing-main">
+      <section class="landing-hero">
+        <div class="hero-noise" aria-hidden="true"></div>
+        <div class="hero-orbit orbit-one" aria-hidden="true"></div>
+        <div class="hero-orbit orbit-two" aria-hidden="true"></div>
+        <div class="hero-copy-block reveal">
+          <p class="eyebrow">Verified finance for autonomous software</p>
+          <h1>Agents can act.<br /><span>Authority stays human.</span></h1>
           <p class="hero-copy">
-            ClearMandate verifies identity, enforces delegated spending rules,
-            and produces evidence before an AI agent moves compliant funds.
+            Give an AI agent a precise spending mandate, verify every participant,
+            and settle through compliant rails without surrendering control.
+          </p>
+          <div class="hero-actions">
+            <a class="primary-link" href="/app.html">
+              <span>Launch ClearMandate</span>
+              <span class="button-icon" aria-hidden="true">→</span>
+            </a>
+            <a class="text-link" href="#workflow">See how it works</a>
+          </div>
+        </div>
+
+        <div class="protocol-preview reveal" id="protocol">
+          <div class="preview-head">
+            <span>Live compliance stack</span>
+            <span class="live-dot">Monad testnet</span>
+          </div>
+          <div class="protocol-row">
+            <span class="protocol-index">01</span>
+            <div>
+              <small>Identity</small>
+              <strong>A-Pass</strong>
+            </div>
+            <span class="row-state">Verified</span>
+          </div>
+          <div class="protocol-row">
+            <span class="protocol-index">02</span>
+            <div>
+              <small>Settlement</small>
+              <strong>A-Token</strong>
+            </div>
+            <span class="row-state">Compliant</span>
+          </div>
+          <div class="protocol-row">
+            <span class="protocol-index">03</span>
+            <div>
+              <small>Decision evidence</small>
+              <strong>Audit receipt</strong>
+            </div>
+            <span class="row-state">Portable</span>
+          </div>
+          <div class="preview-command">
+            <span class="command-prompt">&gt;</span>
+            <span>Purchase 80 aUSDC of cloud credits</span>
+            <span class="command-cursor"></span>
+          </div>
+        </div>
+
+        <div class="hero-metrics reveal">
+          <div><strong>06</strong><span>Controlled stages</span></div>
+          <div><strong>02</strong><span>Verified parties</span></div>
+          <div><strong>01</strong><span>Human approval layer</span></div>
+        </div>
+      </section>
+
+      <section class="workflow-story" id="workflow">
+        <div class="story-intro reveal">
+          <p class="eyebrow">One mandate, complete accountability</p>
+          <h2>Complex agent payments become a legible sequence.</h2>
+          <p>
+            ClearMandate turns natural-language intent into a controlled financial
+            workflow. Each stage exposes the facts, policy, and authorization that
+            determine what happens next.
           </p>
         </div>
-        <div class="trust-summary" aria-label="Trust stack summary">
-          <div>
-            <span>Identity</span>
-            <strong>A-Pass</strong>
-          </div>
-          <div>
-            <span>Settlement</span>
-            <strong>A-Token</strong>
-          </div>
-          <div>
-            <span>Evidence</span>
-            <strong>CCP-ready</strong>
-          </div>
+        <div class="workflow-map reveal">
+          <div class="map-line" aria-hidden="true"></div>
+          <article>
+            <span>01</span>
+            <div><strong>Identify</strong><p>Register and verify the principal.</p></div>
+          </article>
+          <article>
+            <span>02</span>
+            <div><strong>Delegate</strong><p>Define limits, vendors, and expiry.</p></div>
+          </article>
+          <article>
+            <span>03</span>
+            <div><strong>Evaluate</strong><p>Translate intent and enforce policy.</p></div>
+          </article>
+          <article>
+            <span>04</span>
+            <div><strong>Settle</strong><p>Sign compliant A-Token transfers.</p></div>
+          </article>
+          <article>
+            <span>05</span>
+            <div><strong>Reconcile</strong><p>Match on-chain activity to records.</p></div>
+          </article>
+          <article>
+            <span>06</span>
+            <div><strong>Evidence</strong><p>Export the complete decision trail.</p></div>
+          </article>
         </div>
       </section>
 
-      <section class="identity-console panel">
-        <div class="panel-heading">
-          <div>
-            <p class="eyebrow">00 / Identity setup</p>
-            <h2>Register the principal A-Pass</h2>
-          </div>
-          <span class="status-chip" id="apass-status">Not checked</span>
-        </div>
-        <p class="identity-intro">
-          The hackathon credential can issue an A-Pass directly. Identity data
-          is encrypted server-side and is not stored by ClearMandate.
-        </p>
-        <form class="identity-form" id="apass-form">
-          <label>
-            Full legal name
-            <input
-              name="fullName"
-              autocomplete="name"
-              placeholder="Name shown on your ID"
-              required
-            />
-          </label>
-          <label>
-            ID type
-            <select name="idType">
-              <option value="OTHER">Other</option>
-              <option value="NID">National ID</option>
-              <option value="PASSPORT">Passport</option>
-              <option value="DRIVER_LICENSE">Driver license</option>
-            </select>
-          </label>
-          <label>
-            Issuing country
-            <input
-              name="issuingCountryISO2"
-              value="NG"
-              maxlength="2"
-              pattern="[A-Za-z]{2}"
-              autocomplete="country"
-              required
-            />
-          </label>
-          <label>
-            ID number <span class="optional">(optional)</span>
-            <input name="idNumber" autocomplete="off" />
-          </label>
-          <div class="identity-actions">
-            <button class="secondary-button" id="check-apass" type="button">
-              Check A-Pass
-            </button>
-            <button class="primary-button compact" id="generate-apass" type="submit">
-              <span>Register A-Pass</span><span>-&gt;</span>
-            </button>
-          </div>
-        </form>
-        <p class="console-note" id="apass-note">
-          Use accurate identity details. The ID number is optional under the
-          Cleanverse V5 request schema.
-        </p>
-      </section>
-
-      <section class="workspace">
-        <aside class="mandate-panel panel">
-          <div class="panel-heading">
-            <div>
-              <p class="eyebrow">01 / Delegation</p>
-              <h2>Agent mandate</h2>
+      <section class="evidence-story" id="evidence">
+        <div class="evidence-visual reveal">
+          <div class="receipt-shell">
+            <div class="receipt-header">
+              <span>CM / DECISION RECEIPT</span>
+              <span>RUN-7A21</span>
             </div>
-            <span class="status-chip status-active">Active</span>
-          </div>
-
-          <form id="mandate-form">
-            <label>
-              Principal wallet
-              <div class="input-with-action">
-                <input
-                  id="principal-wallet"
-                  name="principalWallet"
-                  autocomplete="off"
-                  value="0xc6cfa54eda215a62fd5495a9b6555bd85b6b7ddb"
-                  required
-                />
-                <button id="use-wallet" type="button">Use wallet</button>
-              </div>
-            </label>
-
-            <div class="field-row">
-              <label>
-                Spend limit
-                <div class="input-suffix">
-                  <input
-                    name="maxAmount"
-                    type="number"
-                    min="1"
-                    step="0.01"
-                    value="100"
-                    required
-                  />
-                  <span>aUSDC</span>
-                </div>
-              </label>
-              <label>
-                Approval above
-                <div class="input-suffix">
-                  <input
-                    name="approvalThreshold"
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value="75"
-                    required
-                  />
-                  <span>aUSDC</span>
-                </div>
-              </label>
+            <div class="receipt-decision">
+              <span>Decision</span>
+              <strong>Human approval required</strong>
             </div>
-
-            <label>
-              Permitted category
-              <select name="category">
-                <option value="cloud">Cloud infrastructure</option>
-                <option value="data">Data and APIs</option>
-                <option value="software">Software subscriptions</option>
-              </select>
-            </label>
-
-            <label>
-              Approved vendor
-              <select name="vendor" id="vendor-select">
-                <option value="NovaCompute">NovaCompute / cloud compute</option>
-                <option value="VectorAPI">VectorAPI / retrieval APIs</option>
-                <option value="AtlasData">AtlasData / verified datasets</option>
-              </select>
-            </label>
-
-            <label>
-              Mandate expires
-              <input name="expiresAt" id="expires-at" type="datetime-local" required />
-            </label>
-
-            <div class="mode-switch" role="group" aria-label="Execution mode">
-              <button class="mode-option selected" data-mode="demo" type="button">
-                <strong>Demo mode</strong>
-                <span>Deterministic trust checks</span>
-              </button>
-              <button class="mode-option" data-mode="live" type="button">
-                <strong>Live sandbox</strong>
-                <span>Cleanverse V5 calls</span>
-              </button>
+            <div class="receipt-grid">
+              <div><span>Principal</span><strong>0xc6cf…7ddb</strong></div>
+              <div><span>Vendor</span><strong>NovaCompute</strong></div>
+              <div><span>Amount</span><strong>80 aUSDC</strong></div>
+              <div><span>Policy</span><strong>7 / 7 passed</strong></div>
             </div>
-          </form>
-        </aside>
-
-        <section class="execution-panel panel">
-          <div class="panel-heading">
-            <div>
-              <p class="eyebrow">02 / Agent action</p>
-              <h2>Procurement request</h2>
-            </div>
-            <span class="status-chip" id="api-status">Checking API</span>
-          </div>
-
-          <form id="proposal-form">
-            <label>
-              Agent instruction
-              <textarea
-                name="instruction"
-                rows="3"
-              >Purchase 80 aUSDC of cloud credits from NovaCompute.</textarea>
-            </label>
-
-            <div class="proposal-grid">
-              <label>
-                Amount
-                <div class="input-suffix">
-                  <input
-                    name="amount"
-                    type="number"
-                    min="0.01"
-                    step="0.01"
-                    value="80"
-                    required
-                  />
-                  <span>aUSDC</span>
-                </div>
-              </label>
-              <label>
-                Counterparty wallet
-                <input
-                  name="counterpartyWallet"
-                  value="0x2222222222222222222222222222222222222222"
-                  autocomplete="off"
-                  required
-                />
-              </label>
-            </div>
-
-            <button class="primary-button" id="run-agent" type="submit">
-              <span>Run verified purchase</span>
-              <span aria-hidden="true">-&gt;</span>
-            </button>
-          </form>
-
-          <div class="agent-trace hidden" id="agent-trace">
-            <div class="trace-heading">
-              <div>
-                <p class="eyebrow">Agent plan</p>
-                <h3 id="agent-objective">Preparing tools</h3>
-              </div>
-              <span id="agent-confidence">--</span>
-            </div>
-            <ol id="agent-tools"></ol>
-          </div>
-
-          <div class="empty-state" id="empty-state">
-            <div class="empty-orbit">
-              <span></span><span></span><span></span>
-            </div>
-            <h3>Ready to evaluate</h3>
-            <p>
-              The agent will discover the compliant token, verify both wallets,
-              evaluate the mandate, and prepare settlement evidence.
-            </p>
-          </div>
-
-          <div class="run-result hidden" id="run-result">
-            <div class="decision-banner" id="decision-banner">
-              <div>
-                <p class="eyebrow">Decision</p>
-                <h3 id="decision-title">Approval required</h3>
-              </div>
-              <span id="decision-code">HUMAN / 01</span>
-            </div>
-
-            <ol class="check-list" id="check-list"></ol>
-
-            <div class="settlement-card">
-              <div>
-                <p class="eyebrow">Settlement</p>
-                <h3 id="settlement-title">Waiting for authorization</h3>
-                <p id="settlement-note"></p>
-              </div>
-              <button class="approval-button hidden" id="approve-button" type="button">
-                Approve payment
-              </button>
-            </div>
-
-            <div class="wallet-console" id="wallet-console">
-              <div class="console-heading">
-                <div>
-                  <p class="eyebrow">Wallet execution</p>
-                  <h3>Monad settlement console</h3>
-                </div>
-                <button class="ghost-button" id="refresh-balances" type="button">
-                  Refresh balances
-                </button>
-              </div>
-              <div class="wallet-stats">
-                <div><span>Network</span><strong id="wallet-network">Not connected</strong></div>
-                <div><span>USDC</span><strong id="usdc-balance">--</strong></div>
-                <div><span>aUSDC</span><strong id="ausdc-balance">--</strong></div>
-                <div><span>Gas</span><strong id="mon-balance">-- MON</strong></div>
-              </div>
-              <div class="wallet-actions">
-                <button class="secondary-button" id="switch-network" type="button">
-                  Switch to Monad
-                </button>
-                <button class="secondary-button" id="deposit-usdc" type="button">
-                  Deposit USDC for aUSDC
-                </button>
-                <button class="primary-button compact" id="send-payment" type="button">
-                  <span>Sign aUSDC payment</span><span>-&gt;</span>
-                </button>
-              </div>
-              <p class="console-note" id="wallet-note">
-                Wallet actions are explicit. ClearMandate never stores a private
-                key or signs silently.
-              </p>
-            </div>
-          </div>
-        </section>
-      </section>
-
-      <section class="evidence-console panel">
-        <div class="panel-heading">
-          <div>
-            <p class="eyebrow">03 / Reconciliation</p>
-            <h2>Transaction evidence</h2>
-          </div>
-          <button class="ghost-button" id="lookup-transaction" type="button">
-            Query Cleanverse
-          </button>
-        </div>
-        <div class="evidence-inputs">
-          <label>
-            Transaction hash
-            <input id="transaction-hash" placeholder="0x..." autocomplete="off" />
-          </label>
-          <label>
-            Transaction type
-            <select id="transaction-type">
-              <option value="transfer">aUSDC transfer</option>
-              <option value="deposit">USDC deposit</option>
-              <option value="withdraw">Withdrawal</option>
-            </select>
-          </label>
-        </div>
-        <div class="transaction-result" id="transaction-result">
-          <p>No transaction has been reconciled yet.</p>
-        </div>
-        <div class="evidence-actions">
-          <button class="secondary-button" id="open-explorer" type="button" disabled>
-            Open explorer
-          </button>
-          <button class="secondary-button" id="get-report" type="button" disabled>
-            Get transaction report
-          </button>
-        </div>
-      </section>
-
-      <section class="evidence-section">
-        <div>
-          <p class="eyebrow">04 / Evidence</p>
-          <h2>Every decision leaves a receipt.</h2>
-        </div>
-        <div class="evidence-rail">
-          <div>
-            <span>Mandate</span>
-            <strong id="evidence-mandate">Not evaluated</strong>
-          </div>
-          <div>
-            <span>Identity</span>
-            <strong id="evidence-identity">Not verified</strong>
-          </div>
-          <div>
-            <span>Policy</span>
-            <strong id="evidence-policy">Not evaluated</strong>
-          </div>
-          <div>
-            <span>Settlement</span>
-            <strong id="evidence-settlement">Not started</strong>
+            <div class="receipt-hash">0x4af1 921d 0c84 77ea 239d 661b</div>
           </div>
         </div>
-        <button class="download-button" id="download-receipt" type="button" disabled>
-          Download audit receipt
-        </button>
+        <div class="evidence-copy reveal">
+          <p class="eyebrow">Evidence before execution</p>
+          <h2>Every payment explains itself.</h2>
+          <p>
+            Identity checks, mandate rules, human approvals, wallet signatures,
+            and Cleanverse transaction records are gathered into one portable
+            receipt.
+          </p>
+          <a class="primary-link dark-link" href="/app.html">
+            <span>Build a mandate</span>
+            <span class="button-icon" aria-hidden="true">→</span>
+          </a>
+        </div>
       </section>
     </main>
 
-    <div class="toast hidden" id="toast" role="status"></div>
-
-    <script type="module" src="/app.js"></script>
+    <footer class="landing-footer">
+      <a class="brand" href="/">
+        <span class="brand-mark">CM</span><span>ClearMandate</span>
+      </a>
+      <p>Verified identity. Bounded authority. Compliant settlement.</p>
+      <span>Built on Cleanverse × Monad</span>
+    </footer>
+    <script type="module" src="/landing.js"></script>
   </body>
 </html>

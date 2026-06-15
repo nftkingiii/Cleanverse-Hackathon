@@ -38,6 +38,26 @@ const apassStatus = $("#apass-status");
 const apassNote = $("#apass-note");
 const checkAPassButton = $("#check-apass");
 const generateAPassButton = $("#generate-apass");
+const workflowTabs = [...document.querySelectorAll(".workflow-tab")];
+const tabPanels = [...document.querySelectorAll(".tab-panel")];
+const pageTitle = $("#page-title");
+const mobileStep = $("#mobile-step");
+const mobileTitle = $("#mobile-title");
+const mobilePrevious = $("#mobile-prev");
+const mobileNext = $("#mobile-next");
+
+const workflow = [
+  { id: "identity", title: "Principal identity", shortTitle: "Identity" },
+  { id: "mandate", title: "Agent mandate", shortTitle: "Mandate" },
+  { id: "agent", title: "Agent action", shortTitle: "Agent action" },
+  { id: "settlement", title: "Wallet settlement", shortTitle: "Settlement" },
+  {
+    id: "reconciliation",
+    title: "Transaction reconciliation",
+    shortTitle: "Reconciliation",
+  },
+  { id: "evidence", title: "Decision evidence", shortTitle: "Evidence" },
+];
 
 const evidence = {
   mandate: $("#evidence-mandate"),
@@ -51,6 +71,7 @@ let connectedWallet = "";
 let latestReceipt = null;
 let chainConfig = null;
 let toastTimer;
+let activeTab = "identity";
 
 const future = new Date(Date.now() + 24 * 60 * 60 * 1000);
 const localDate = new Date(future.getTime() - future.getTimezoneOffset() * 60_000)
@@ -63,6 +84,42 @@ function showToast(message) {
   toast.textContent = message;
   toast.classList.remove("hidden");
   toastTimer = setTimeout(() => toast.classList.add("hidden"), 4200);
+}
+
+function setStepComplete(id, complete = true) {
+  const tab = workflowTabs.find((candidate) => candidate.dataset.tab === id);
+  tab?.classList.toggle("complete", complete);
+}
+
+function navigateToTab(id, { updateHash = true } = {}) {
+  const index = workflow.findIndex((step) => step.id === id);
+  if (index < 0) return;
+  activeTab = id;
+
+  workflowTabs.forEach((tab) => {
+    const selected = tab.dataset.tab === id;
+    tab.classList.toggle("active", selected);
+    tab.setAttribute("aria-current", selected ? "step" : "false");
+  });
+  tabPanels.forEach((panel) =>
+    panel.classList.toggle("active", panel.dataset.panel === id),
+  );
+
+  const step = workflow[index];
+  pageTitle.textContent = step.title;
+  mobileStep.textContent = `${String(index + 1).padStart(2, "0")} / 06`;
+  mobileTitle.textContent = step.shortTitle;
+  mobilePrevious.disabled = index === 0;
+  mobileNext.disabled = index === workflow.length - 1;
+
+  if (updateHash) history.replaceState(null, "", `#${id}`);
+  document.querySelector(".app-stage")?.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function moveTab(direction) {
+  const index = workflow.findIndex((step) => step.id === activeTab);
+  const next = workflow[index + direction];
+  if (next) navigateToTab(next.id);
 }
 
 function formObject(form) {
@@ -94,11 +151,15 @@ function restoreReceipt() {
     if (!stored) return;
     latestReceipt = JSON.parse(stored);
     renderDecision(latestReceipt);
+    setStepComplete("mandate");
+    setStepComplete("agent");
     if (latestReceipt.settlement?.txHash) {
       transactionHashInput.value = latestReceipt.settlement.txHash;
       openExplorerButton.disabled = false;
       getReportButton.disabled = false;
+      setStepComplete("settlement");
     }
+    if (latestReceipt.cleanverseTransaction) setStepComplete("reconciliation");
   } catch {
     localStorage.removeItem("clearmandate.latestReceipt");
   }
@@ -119,6 +180,11 @@ async function initialize() {
     apiStatus.textContent = "Server offline";
   }
   restoreReceipt();
+  const initialTab = location.hash.slice(1);
+  navigateToTab(
+    workflow.some((step) => step.id === initialTab) ? initialTab : "identity",
+    { updateHash: false },
+  );
 }
 
 function shortAddress(address) {
@@ -191,6 +257,7 @@ function renderAPassStatus(data) {
   apassNote.textContent = verified
     ? "This wallet has an active A-Pass and is ready for live verification."
     : "No active A-Pass was found for this wallet. Complete the form to register it.";
+  setStepComplete("identity", verified);
   return verified;
 }
 
@@ -462,6 +529,8 @@ async function runAgent(event) {
     mandateForm.elements.vendor.value = latestReceipt.proposal.vendor;
     mandateForm.elements.category.value = latestReceipt.proposal.category;
     renderDecision(latestReceipt);
+    setStepComplete("mandate");
+    setStepComplete("agent");
     persistReceipt();
   } catch (error) {
     showToast(error.message);
@@ -486,6 +555,7 @@ function approvePayment() {
   evidence.settlement.textContent = "Approved / ready";
   persistReceipt();
   showToast("Human approval added to the audit receipt.");
+  navigateToTab("settlement");
 }
 
 async function sendErc20Transfer(token, recipient, amount, type) {
@@ -574,6 +644,7 @@ async function sendPayment() {
     latestReceipt.settlement.txHash = txHash;
     latestReceipt.settlement.walletReceipt = receipt;
     latestReceipt.settlement.submittedAt = new Date().toISOString();
+    setStepComplete("settlement");
     evidence.settlement.textContent = "Transaction submitted";
     settlementTitle.textContent = "Payment submitted";
     settlementNote.textContent =
@@ -634,6 +705,7 @@ async function lookupTransaction() {
     renderTransaction(tx);
     latestReceipt = latestReceipt || {};
     latestReceipt.cleanverseTransaction = tx;
+    setStepComplete("reconciliation");
     persistReceipt();
     openExplorerButton.disabled = false;
     getReportButton.disabled = false;
@@ -686,6 +758,7 @@ function downloadReceipt() {
   link.download = `clearmandate-${latestReceipt.runId || "receipt"}.json`;
   link.click();
   URL.revokeObjectURL(url);
+  setStepComplete("evidence");
 }
 
 modeButtons.forEach((button) => {
@@ -723,6 +796,20 @@ openExplorerButton.addEventListener("click", openExplorer);
 getReportButton.addEventListener("click", getReport);
 checkAPassButton.addEventListener("click", () => checkAPass());
 apassForm.addEventListener("submit", generateAPass);
+workflowTabs.forEach((tab) =>
+  tab.addEventListener("click", () => navigateToTab(tab.dataset.tab)),
+);
+document.querySelectorAll("[data-go]").forEach((button) =>
+  button.addEventListener("click", () => navigateToTab(button.dataset.go)),
+);
+mobilePrevious.addEventListener("click", () => moveTab(-1));
+mobileNext.addEventListener("click", () => moveTab(1));
+window.addEventListener("hashchange", () => {
+  const requested = location.hash.slice(1);
+  if (workflow.some((step) => step.id === requested)) {
+    navigateToTab(requested, { updateHash: false });
+  }
+});
 
 window.ethereum?.on?.("accountsChanged", ([account]) => {
   connectedWallet = account || "";

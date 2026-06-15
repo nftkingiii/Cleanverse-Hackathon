@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="ClearMandate verified payment workspace." />
+    <title>ClearMandate — App</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body class="app-body">
+    <div class="app-shell">
+      <aside class="app-sidebar">
+        <a class="brand app-brand" href="/" aria-label="ClearMandate home">
+          <span class="brand-mark">CM</span><span>ClearMandate</span>
+        </a>
+        <div class="sidebar-context">
+          <span class="context-icon">CM</span>
+          <div><strong>Verified workspace</strong><span>Monad sandbox</span></div>
+        </div>
+        <p class="nav-label">Workflow</p>
+        <nav class="workflow-nav" aria-label="Payment workflow">
+          <button class="workflow-tab active" data-tab="identity" type="button">
+            <span class="tab-number">01</span>
+            <span><strong>Identity</strong><small>A-Pass setup</small></span>
+            <span class="tab-state"></span>
+          </button>
+          <button class="workflow-tab" data-tab="mandate" type="button">
+            <span class="tab-number">02</span>
+            <span><strong>Mandate</strong><small>Delegated authority</small></span>
+            <span class="tab-state"></span>
+          </button>
+          <button class="workflow-tab" data-tab="agent" type="button">
+            <span class="tab-number">03</span>
+            <span><strong>Agent action</strong><small>Plan and evaluate</small></span>
+            <span class="tab-state"></span>
+          </button>
+          <button class="workflow-tab" data-tab="settlement" type="button">
+            <span class="tab-number">04</span>
+            <span><strong>Settlement</strong><small>Wallet execution</small></span>
+            <span class="tab-state"></span>
+          </button>
+          <button class="workflow-tab" data-tab="reconciliation" type="button">
+            <span class="tab-number">05</span>
+            <span><strong>Reconciliation</strong><small>Transaction record</small></span>
+            <span class="tab-state"></span>
+          </button>
+          <button class="workflow-tab" data-tab="evidence" type="button">
+            <span class="tab-number">06</span>
+            <span><strong>Evidence</strong><small>Audit receipt</small></span>
+            <span class="tab-state"></span>
+          </button>
+        </nav>
+        <div class="sidebar-note">
+          <span class="note-mark">i</span>
+          <p>Private keys never enter ClearMandate. Every wallet action requires your signature.</p>
+        </div>
+      </aside>
+
+      <section class="app-stage">
+        <header class="app-topbar">
+          <div>
+            <p class="app-kicker">Payment control center</p>
+            <h1 id="page-title">Principal identity</h1>
+          </div>
+          <div class="topbar-actions">
+            <span class="network-pill"><span class="pulse"></span>Monad testnet</span>
+            <button class="wallet-button" id="connect-wallet" type="button">Connect wallet</button>
+          </div>
+        </header>
+
+        <div class="mobile-tabs" aria-label="Workflow steps">
+          <button id="mobile-prev" type="button" aria-label="Previous step">←</button>
+          <div><span id="mobile-step">01 / 06</span><strong id="mobile-title">Identity</strong></div>
+          <button id="mobile-next" type="button" aria-label="Next step">→</button>
+        </div>
+
+        <main class="app-content">
+          <section class="tab-panel active" data-panel="identity">
+            <div class="page-intro">
+              <div><p class="eyebrow">01 / Identity setup</p><h2>Register the principal A-Pass</h2></div>
+              <span class="status-chip" id="apass-status">Not checked</span>
+            </div>
+            <div class="content-grid identity-layout">
+              <div class="surface primary-surface">
+                <div class="surface-heading">
+                  <div><span class="surface-icon">ID</span><h3>Identity record</h3></div>
+                  <span>Encrypted submission</span>
+                </div>
+                <p class="surface-copy">Create the identity credential that binds the principal wallet to this workflow.</p>
+                <form id="apass-form">
+                  <label>Full legal name<input name="fullName" autocomplete="name" placeholder="Name shown on your ID" required /></label>
+                  <div class="field-row">
+                    <label>ID type<select name="idType"><option value="OTHER">Other</option><option value="NID">National ID</option><option value="PASSPORT">Passport</option><option value="DRIVER_LICENSE">Driver license</option></select></label>
+                    <label>Issuing country<input name="issuingCountryISO2" value="NG" maxlength="2" pattern="[A-Za-z]{2}" autocomplete="country" required /></label>
+                  </div>
+                  <label>ID number <span class="optional">(optional)</span><input name="idNumber" autocomplete="off" /></label>
+                  <div class="form-actions">
+                    <button class="secondary-button" id="check-apass" type="button">Check status</button>
+                    <button class="primary-button compact" id="generate-apass" type="submit"><span>Register A-Pass</span><span class="button-icon">→</span></button>
+                  </div>
+                </form>
+              </div>
+              <aside class="surface insight-surface">
+                <div class="identity-orbit"><span>CM</span></div>
+                <p class="eyebrow">Why this matters</p>
+                <h3>Trust begins with a verified principal.</h3>
+                <p>A-Pass lets the policy engine establish who delegated authority before any financial action is prepared.</p>
+                <div class="info-list">
+                  <div><span>Data handling</span><strong>AES encrypted</strong></div>
+                  <div><span>Storage</span><strong>Not retained</strong></div>
+                  <div><span>Network</span><strong>Monad testnet</strong></div>
+                </div>
+                <p class="console-note" id="apass-note">Use accurate identity details. The ID number is optional under the Cleanverse V5 request schema.</p>
+              </aside>
+            </div>
+          </section>
+
+          <section class="tab-panel" data-panel="mandate">
+            <div class="page-intro">
+              <div><p class="eyebrow">02 / Delegation</p><h2>Define the agent mandate</h2></div>
+              <span class="status-chip status-active">Draft active</span>
+            </div>
+            <div class="content-grid mandate-layout">
+              <div class="surface primary-surface">
+                <div class="surface-heading"><div><span class="surface-icon">M</span><h3>Authority and limits</h3></div><span>Policy inputs</span></div>
+                <form id="mandate-form">
+                  <label>Principal wallet<div class="input-with-action"><input id="principal-wallet" name="principalWallet" autocomplete="off" value="0xc6cfa54eda215a62fd5495a9b6555bd85b6b7ddb" required /><button id="use-wallet" type="button">Use wallet</button></div></label>
+                  <div class="field-row">
+                    <label>Spend limit<div class="input-suffix"><input name="maxAmount" type="number" min="1" step="0.01" value="100" required /><span>aUSDC</span></div></label>
+                    <label>Approval above<div class="input-suffix"><input name="approvalThreshold" type="number" min="0" step="0.01" value="75" required /><span>aUSDC</span></div></label>
+                  </div>
+                  <div class="field-row">
+                    <label>Permitted category<select name="category"><option value="cloud">Cloud infrastructure</option><option value="data">Data and APIs</option><option value="software">Software subscriptions</option></select></label>
+                    <label>Approved vendor<select name="vendor" id="vendor-select"><option value="NovaCompute">NovaCompute / cloud compute</option><option value="VectorAPI">VectorAPI / retrieval APIs</option><option value="AtlasData">AtlasData / verified datasets</option></select></label>
+                  </div>
+                  <label>Mandate expires<input name="expiresAt" id="expires-at" type="datetime-local" required /></label>
+                  <div class="mode-switch" role="group" aria-label="Execution mode">
+                    <button class="mode-option selected" data-mode="demo" type="button"><strong>Demo mode</strong><span>Deterministic trust checks</span></button>
+                    <button class="mode-option" data-mode="live" type="button"><strong>Live sandbox</strong><span>Cleanverse V5 calls</span></button>
+                  </div>
+                </form>
+              </div>
+              <aside class="surface policy-preview">
+                <p class="eyebrow">Mandate preview</p>
+                <h3>Bounded authority, readable at a glance.</h3>
+                <div class="limit-visual"><div><span>Autonomous</span><strong>0–75</strong></div><div><span>Approval</span><strong>75–100</strong></div></div>
+                <div class="info-list">
+                  <div><span>Asset</span><strong>aUSDC</strong></div>
+                  <div><span>Chain</span><strong>Monad</strong></div>
+                  <div><span>Enforcement</span><strong>Before signing</strong></div>
+                </div>
+                <button class="next-step-button" data-go="agent" type="button">Continue to agent action <span>→</span></button>
+              </aside>
+            </div>
+          </section>
+
+          <section class="tab-panel" data-panel="agent">
+            <div class="page-intro">
+              <div><p class="eyebrow">03 / Agent action</p><h2>Plan and evaluate the purchase</h2></div>
+              <span class="status-chip" id="api-status">Checking API</span>
+            </div>
+            <div class="agent-workspace">
+              <div class="surface request-surface">
+                <div class="surface-heading"><div><span class="surface-icon">A</span><h3>Procurement request</h3></div><span>Natural language</span></div>
+                <form id="proposal-form">
+                  <label>Agent instruction<textarea name="instruction" rows="4">Purchase 80 aUSDC of cloud credits from NovaCompute.</textarea></label>
+                  <div class="proposal-grid">
+                    <label>Amount<div class="input-suffix"><input name="amount" type="number" min="0.01" step="0.01" value="80" required /><span>aUSDC</span></div></label>
+                    <label>Counterparty wallet<input name="counterpartyWallet" value="0x2222222222222222222222222222222222222222" autocomplete="off" required /></label>
+                  </div>
+                  <button class="primary-button" id="run-agent" type="submit"><span>Run verified purchase</span><span class="button-icon">→</span></button>
+                </form>
+                <div class="agent-trace hidden" id="agent-trace">
+                  <div class="trace-heading"><div><p class="eyebrow">Agent plan</p><h3 id="agent-objective">Preparing tools</h3></div><span id="agent-confidence">--</span></div>
+                  <ol id="agent-tools"></ol>
+                </div>
+              </div>
+              <div class="surface result-surface">
+                <div class="empty-state" id="empty-state">
+                  <div class="empty-orbit"><span></span><span></span><span></span></div>
+                  <h3>Ready to evaluate</h3>
+                  <p>The agent will discover the compliant token, verify both wallets, and enforce the mandate.</p>
+                </div>
+                <div class="run-result hidden" id="run-result">
+                  <div class="decision-banner" id="decision-banner"><div><p class="eyebrow">Decision</p><h3 id="decision-title">Approval required</h3></div><span id="decision-code">HUMAN / 01</span></div>
+                  <ol class="check-list" id="check-list"></ol>
+                  <div class="settlement-card"><div><p class="eyebrow">Authorization</p><h3 id="settlement-title">Waiting for authorization</h3><p id="settlement-note"></p></div><button class="approval-button hidden" id="approve-button" type="button">Approve payment</button></div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="tab-panel" data-panel="settlement">
+            <div class="page-intro">
+              <div><p class="eyebrow">04 / Settlement</p><h2>Execute through the connected wallet</h2></div>
+              <span class="status-chip">Explicit signature</span>
+            </div>
+            <div class="content-grid settlement-layout">
+              <div class="surface wallet-console" id="wallet-console">
+                <div class="surface-heading"><div><span class="surface-icon">W</span><h3>Monad settlement console</h3></div><button class="text-button" id="refresh-balances" type="button">Refresh</button></div>
+                <div class="balance-hero"><span>Available compliant balance</span><strong id="ausdc-balance">--</strong><small>aUSDC</small></div>
+                <div class="wallet-stats">
+                  <div><span>Network</span><strong id="wallet-network">Not connected</strong></div>
+                  <div><span>USDC</span><strong id="usdc-balance">--</strong></div>
+                  <div><span>Gas</span><strong id="mon-balance">-- MON</strong></div>
+                </div>
+                <div class="wallet-actions">
+                  <button class="secondary-button" id="switch-network" type="button">Switch to Monad</button>
+                  <button class="secondary-button" id="deposit-usdc" type="button">Deposit USDC</button>
+                  <button class="primary-button compact" id="send-payment" type="button"><span>Sign aUSDC payment</span><span class="button-icon">→</span></button>
+                </div>
+                <p class="console-note" id="wallet-note">Wallet actions are explicit. ClearMandate never stores a private key or signs silently.</p>
+              </div>
+              <aside class="surface settlement-guide">
+                <p class="eyebrow">Execution checklist</p>
+                <div class="guide-step"><span>1</span><div><strong>Connect wallet</strong><p>Bind the mandate principal.</p></div></div>
+                <div class="guide-step"><span>2</span><div><strong>Fund settlement</strong><p>Deposit testnet USDC for aUSDC.</p></div></div>
+                <div class="guide-step"><span>3</span><div><strong>Review and sign</strong><p>Confirm the prepared transfer.</p></div></div>
+                <button class="next-step-button" data-go="reconciliation" type="button">Continue to reconciliation <span>→</span></button>
+              </aside>
+            </div>
+          </section>
+
+          <section class="tab-panel" data-panel="reconciliation">
+            <div class="page-intro">
+              <div><p class="eyebrow">05 / Reconciliation</p><h2>Match the on-chain transaction</h2></div>
+              <button class="secondary-button compact-action" id="lookup-transaction" type="button">Query Cleanverse</button>
+            </div>
+            <div class="surface reconciliation-surface">
+              <div class="evidence-inputs">
+                <label>Transaction hash<input id="transaction-hash" placeholder="0x..." autocomplete="off" /></label>
+                <label>Transaction type<select id="transaction-type"><option value="transfer">aUSDC transfer</option><option value="deposit">USDC deposit</option><option value="withdraw">Withdrawal</option></select></label>
+              </div>
+              <div class="transaction-result" id="transaction-result">
+                <div class="transaction-empty"><span>TX</span><div><strong>No transaction reconciled</strong><p>Submit a hash to retrieve its Cleanverse record.</p></div></div>
+              </div>
+              <div class="evidence-actions">
+                <button class="secondary-button" id="open-explorer" type="button" disabled>Open explorer</button>
+                <button class="primary-button compact" id="get-report" type="button" disabled><span>Get transaction report</span><span class="button-icon">→</span></button>
+              </div>
+            </div>
+          </section>
+
+          <section class="tab-panel" data-panel="evidence">
+            <div class="page-intro">
+              <div><p class="eyebrow">06 / Evidence</p><h2>Export the decision trail</h2></div>
+              <button class="primary-button compact download-button" id="download-receipt" type="button" disabled><span>Download receipt</span><span class="button-icon">↓</span></button>
+            </div>
+            <div class="evidence-dashboard">
+              <div class="surface evidence-score">
+                <div class="score-ring"><span>CM</span></div>
+                <p class="eyebrow">Evidence readiness</p>
+                <h3>One receipt, every control.</h3>
+                <p>The latest run gathers authorization, identity, policy, and settlement evidence in a portable JSON record.</p>
+              </div>
+              <div class="evidence-cards">
+                <article class="surface"><span class="evidence-index">01</span><small>Mandate</small><strong id="evidence-mandate">Not evaluated</strong><p>Delegated authority and limits.</p></article>
+                <article class="surface"><span class="evidence-index">02</span><small>Identity</small><strong id="evidence-identity">Not verified</strong><p>Principal and counterparty checks.</p></article>
+                <article class="surface"><span class="evidence-index">03</span><small>Policy</small><strong id="evidence-policy">Not evaluated</strong><p>Every applied mandate rule.</p></article>
+                <article class="surface"><span class="evidence-index">04</span><small>Settlement</small><strong id="evidence-settlement">Not started</strong><p>Wallet and transaction record.</p></article>
+              </div>
+            </div>
+          </section>
+        </main>
+      </section>
+    </div>
+    <div class="toast hidden" id="toast" role="status"></div>
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>

@@ -34,6 +34,9 @@ npm run dev
 
 Open [http://localhost:4173](http://localhost:4173).
 
+The root URL is the product landing page. Select **Launch app** to open the
+six-stage workspace at [http://localhost:4173/app.html](http://localhost:4173/app.html).
+
 ## Configuration
 
 Copy `.env.example` to `.env.local` and add the hackathon credentials:
