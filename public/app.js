@@ -28,6 +28,7 @@ const usdcBalance = $("#usdc-balance");
 const ausdcBalance = $("#ausdc-balance");
 const monBalance = $("#mon-balance");
 const walletNote = $("#wallet-note");
+const faucetAmountInput = $("#faucet-amount");
 const transactionHashInput = $("#transaction-hash");
 const transactionType = $("#transaction-type");
 const transactionResult = $("#transaction-result");
@@ -38,6 +39,12 @@ const apassStatus = $("#apass-status");
 const apassNote = $("#apass-note");
 const checkAPassButton = $("#check-apass");
 const generateAPassButton = $("#generate-apass");
+const apassCustomerIdInput = $("#apass-customer-id");
+const apassSummary = $("#apass-summary");
+const apassRecordGrid = $("#apass-record-grid");
+const apassRecordJson = $("#apass-record-json");
+const editAPassButton = $("#edit-apass");
+const refreshAPassButton = $("#refresh-apass");
 const workflowTabs = [...document.querySelectorAll(".workflow-tab")];
 const tabPanels = [...document.querySelectorAll(".tab-panel")];
 const pageTitle = $("#page-title");
@@ -72,12 +79,22 @@ let latestReceipt = null;
 let chainConfig = null;
 let toastTimer;
 let activeTab = "identity";
+let apassActivationCheck = 0;
+let latestAPassRegistration = null;
+
+const APASS_REGISTRATION_KEY = "clearmandate.apassRegistration";
 
 const future = new Date(Date.now() + 24 * 60 * 60 * 1000);
 const localDate = new Date(future.getTime() - future.getTimezoneOffset() * 60_000)
   .toISOString()
   .slice(0, 16);
 $("#expires-at").value = localDate;
+
+apassCustomerIdInput.value = `${Math.floor(Date.now() / 1000)}${Math.floor(
+  Math.random() * 1_000_000,
+)
+  .toString()
+  .padStart(6, "0")}`;
 
 function showToast(message) {
   clearTimeout(toastTimer);
@@ -126,6 +143,30 @@ function formObject(form) {
   return Object.fromEntries(new FormData(form).entries());
 }
 
+function apassRequestBody(address, identity) {
+  return {
+    address,
+    customerId: identity.customerId,
+    kycSource: identity.kycSource,
+    kycId: identity.kycId,
+    subTier: identity.subTier,
+    subGroup: identity.subGroup,
+    override: identity.override,
+    expirationTime: identity.expirationTime,
+    fullName: identity.fullName,
+    idType: identity.idType,
+    idNumber: identity.idNumber,
+    validUntil: identity.validUntil,
+    issuingCountryISO2: identity.issuingCountryISO2,
+    bankCountry: identity.bankCountry,
+    bankName: identity.bankName,
+    bankAccount: identity.bankAccount,
+    bankAccountType: identity.bankAccountType,
+    bankBalance: identity.bankBalance,
+    bankCurrency: identity.bankCurrency,
+  };
+}
+
 async function request(path, options = {}) {
   const response = await fetch(path, {
     headers: { "Content-Type": "application/json" },
@@ -144,6 +185,13 @@ async function request(path, options = {}) {
 function persistReceipt() {
   if (latestReceipt) {
     localStorage.setItem("clearmandate.latestReceipt", JSON.stringify(latestReceipt));
+  }
+}
+
+function persistAPassRegistration(data) {
+  latestAPassRegistration = data || null;
+  if (latestAPassRegistration) {
+    localStorage.setItem(APASS_REGISTRATION_KEY, JSON.stringify(latestAPassRegistration));
   }
 }
 
@@ -167,6 +215,15 @@ function restoreReceipt() {
   }
 }
 
+function restoreAPassRegistration() {
+  try {
+    const stored = localStorage.getItem(APASS_REGISTRATION_KEY);
+    if (stored) latestAPassRegistration = JSON.parse(stored);
+  } catch {
+    localStorage.removeItem(APASS_REGISTRATION_KEY);
+  }
+}
+
 async function initialize() {
   try {
     const [health, chain] = await Promise.all([
@@ -181,6 +238,7 @@ async function initialize() {
   } catch {
     apiStatus.textContent = "Server offline";
   }
+  restoreAPassRegistration();
   restoreReceipt();
   const initialTab = location.hash.slice(1);
   navigateToTab(
@@ -191,6 +249,86 @@ async function initialize() {
 
 function shortAddress(address) {
   return address ? `${address.slice(0, 6)}...${address.slice(-4)}` : "--";
+}
+
+function formatRecordValue(value) {
+  if (value === undefined || value === null || value === "") return "--";
+  if (typeof value === "boolean") return value ? "true" : "false";
+  if (typeof value === "number") return String(value);
+  if (!String(value).replaceAll("\u0000", "").trim()) return "--";
+  return String(value);
+}
+
+function showAPassForm() {
+  apassSummary.classList.add("hidden");
+  apassForm.classList.remove("hidden");
+}
+
+function recordSection(title, copy) {
+  const section = document.createElement("div");
+  section.className = "record-section";
+  const heading = document.createElement("strong");
+  heading.textContent = title;
+  const detail = document.createElement("span");
+  detail.textContent = copy;
+  section.append(heading, detail);
+  return section;
+}
+
+function recordField(label, value) {
+  const item = document.createElement("div");
+  item.className = "record-field";
+  const key = document.createElement("span");
+  key.textContent = label;
+  const content = document.createElement("strong");
+  content.textContent = formatRecordValue(value);
+  item.append(key, content);
+  return item;
+}
+
+function showAPassSummary(statusData, registrationData = latestAPassRegistration) {
+  const registrationWallet = registrationData?.wallet || {};
+  const mergedRecord = {
+    registration: registrationData || null,
+    verification: statusData || null,
+  };
+  const fields = [
+    recordSection(
+      "Generate A-Pass response",
+      registrationData
+        ? "Accepted registration values returned by Cleanverse."
+        : "Register through this app to capture the full generate_apass response.",
+    ),
+    recordField("Customer ID", registrationData?.customerId),
+    recordField("CV record ID", registrationData?.cvRecordId || statusData?.cvRecordId),
+    recordField("Tier", registrationData?.tier || statusData?.tier),
+    recordField("Operation", registrationWallet.operate),
+    recordField("Wallet", registrationWallet.address),
+    recordField("Chain", registrationWallet.chain),
+    recordField("A-Pass tx", registrationWallet.txHash),
+    recordSection(
+      "Cleanverse deposit wallets",
+      "Send testnet USDC to the USDC deposit wallet when minting/receiving aUSDC.",
+    ),
+    recordField("Deposit USDC wallet", registrationWallet.depositUSDCWallet),
+    recordField("Deposit USDC account", registrationWallet.depositUSDCAccount),
+    recordField("Deposit USDT wallet", registrationWallet.depositUSDTWallet),
+    recordField("Deposit USDT account", registrationWallet.depositUSDTAccount),
+    recordField("A-Pass address", registrationWallet.apassAddress),
+    recordSection("Query A-Pass status", "Latest verification record returned by query_apass."),
+    recordField("Status", statusData?.status === 1 ? "Active" : statusData?.message || "Verified"),
+    recordField("Sub tier", statusData?.subTier),
+    recordField("Sub group", statusData?.subGroup),
+    recordField("Expiration", statusData?.expirationTime),
+    recordField("KYC hash", statusData?.currentKycHash),
+    recordField("Group", statusData?.group),
+    recordField("Status code", statusData?.status ?? statusData?.code),
+  ];
+
+  apassRecordGrid.replaceChildren(...fields);
+  apassRecordJson.textContent = JSON.stringify(mergedRecord, null, 2);
+  apassForm.classList.add("hidden");
+  apassSummary.classList.remove("hidden");
 }
 
 function padWord(value) {
@@ -223,6 +361,23 @@ function formatUnits(value, decimals = 6, precision = 4) {
   return fraction ? `${whole}.${fraction}` : whole.toString();
 }
 
+function formatTokenAmount(amount, symbol = "") {
+  if (amount === undefined || amount === null || amount === "") return "--";
+  const normalizedSymbol = String(symbol).toLowerCase();
+  const decimals =
+    normalizedSymbol === "usdc" || normalizedSymbol === "ausdc"
+      ? 6
+      : chainConfig?.contracts?.[normalizedSymbol]?.decimals;
+
+  if (decimals === undefined) return String(amount);
+
+  try {
+    return `${formatUnits(BigInt(amount), decimals, 6)} ${symbol}`.trim();
+  } catch {
+    return `${amount} ${symbol}`.trim();
+  }
+}
+
 async function ensureWallet() {
   if (!window.ethereum) {
     throw new Error("No EVM wallet was detected in this browser.");
@@ -252,15 +407,68 @@ async function connectWallet() {
   }
 }
 
-function renderAPassStatus(data) {
-  const verified = Number(data?.code) === 4;
+function renderAPassStatus(data, address = "") {
+  const verified =
+    Number(data?.code) === 4 ||
+    Number(data?.status) === 1 ||
+    Boolean(data?.cvRecordId);
+  const matchingRegistration =
+    latestAPassRegistration?.wallet?.address?.toLowerCase() === address.toLowerCase()
+      ? latestAPassRegistration
+      : null;
   apassStatus.textContent = verified ? "Verified" : "Not registered";
   apassStatus.classList.toggle("status-live", verified);
   apassNote.textContent = verified
     ? "This wallet has an active A-Pass and is ready for live verification."
     : "No active A-Pass was found for this wallet. Complete the form to register it.";
   setStepComplete("identity", verified);
+  if (verified) showAPassSummary(data, matchingRegistration);
+  else showAPassForm();
   return verified;
+}
+
+function renderAPassPending() {
+  apassStatus.textContent = "Activation pending";
+  apassStatus.classList.add("status-live");
+  apassForm.classList.add("hidden");
+  apassSummary.classList.add("hidden");
+  apassNote.textContent =
+    "Cleanverse accepted the registration. The A-Pass is not visible on query yet, so ClearMandate will keep checking for activation.";
+}
+
+async function scheduleAPassActivationChecks(address) {
+  const checkId = Date.now();
+  apassActivationCheck = checkId;
+  renderAPassPending();
+
+  for (let attempt = 1; attempt <= 6; attempt += 1) {
+    await new Promise((resolve) => setTimeout(resolve, attempt === 1 ? 3000 : 5000));
+    if (apassActivationCheck !== checkId) return;
+
+    try {
+      const result = await request("/api/cleanverse/apass/query", {
+        method: "POST",
+        body: JSON.stringify({ chain: "monad", address }),
+      });
+      if (renderAPassStatus(result.data, address)) {
+        showToast("A-Pass is active on Cleanverse.");
+        return;
+      }
+    } catch (error) {
+      if (!/apass not found/i.test(error.message)) {
+        apassStatus.textContent = "Check failed";
+        apassNote.textContent = error.message;
+        return;
+      }
+    }
+
+    apassStatus.textContent = `Activation pending ${attempt}/6`;
+  }
+
+  apassStatus.textContent = "Accepted, not active yet";
+  showAPassForm();
+  apassNote.textContent =
+    "Cleanverse accepted the registration, but query_apass still does not return an active credential for this wallet. Wait a little, then use Check status. If it remains inactive, share the wallet, customer ID, and Generate A-Pass time with Cleanverse.";
 }
 
 async function checkAPass({ quiet = false } = {}) {
@@ -277,14 +485,14 @@ async function checkAPass({ quiet = false } = {}) {
       method: "POST",
       body: JSON.stringify({ chain: "monad", address }),
     });
-    const verified = renderAPassStatus(result.data);
+    const verified = renderAPassStatus(result.data, address);
     if (!quiet) {
       showToast(verified ? "A-Pass is active." : "This wallet does not have an active A-Pass.");
     }
     return verified;
   } catch (error) {
     if (/apass not found/i.test(error.message)) {
-      return renderAPassStatus({ code: 2 });
+      return renderAPassStatus({ code: 2 }, address);
     }
     apassStatus.textContent = "Check failed";
     if (!quiet) showToast(error.message);
@@ -303,23 +511,17 @@ async function generateAPass(event) {
   apassStatus.textContent = "Registering";
 
   try {
-    await request("/api/cleanverse/apass/generate", {
+    const result = await request("/api/cleanverse/apass/generate", {
       method: "POST",
-      body: JSON.stringify({
-        address,
-        fullName: identity.fullName,
-        idType: identity.idType,
-        issuingCountryISO2: identity.issuingCountryISO2,
-        idNumber: identity.idNumber,
-      }),
+      body: JSON.stringify(apassRequestBody(address, identity)),
     });
-    apassForm.elements.idNumber.value = "";
+    persistAPassRegistration(result.data);
     apassStatus.textContent = "Registered";
     apassStatus.classList.add("status-live");
     apassNote.textContent =
-      "Registration was accepted. Checking the wallet's current A-Pass status...";
+      "Registration was accepted. Waiting for Cleanverse to expose it through query_apass...";
     showToast("A-Pass registration accepted by Cleanverse.");
-    await checkAPass({ quiet: true });
+    scheduleAPassActivationChecks(address);
   } catch (error) {
     apassStatus.textContent = "Registration failed";
     const requestReference = error.details?.requestId
@@ -607,31 +809,49 @@ async function waitForWalletReceipt(txHash) {
   return null;
 }
 
-async function depositUsdc() {
+async function requestFaucetAusdc() {
   try {
     await ensureWallet();
-    if (!latestReceipt?.token) throw new Error("Run the agent before depositing.");
-    const deposit = await request("/api/cleanverse/deposit-address", {
-      method: "POST",
-      body: JSON.stringify({ chain: "monad", address: connectedWallet }),
-    });
-    const depositAddress = deposit.data?.depositUSDCWallet;
-    if (!depositAddress) {
-      throw new Error("Cleanverse did not return a USDC deposit address.");
+    const amount = Number(faucetAmountInput.value);
+    if (!Number.isFinite(amount) || amount <= 0) {
+      throw new Error("Enter a valid faucet amount.");
     }
-    const { txHash, receipt } = await sendErc20Transfer(
-      latestReceipt.token.origin_token,
-      depositAddress,
-      latestReceipt.proposal.amount,
-      "deposit",
-    );
-    latestReceipt.settlement.depositTxHash = txHash;
-    latestReceipt.settlement.depositAddress = depositAddress;
-    latestReceipt.settlement.depositReceipt = receipt;
-    persistReceipt();
-    showToast("USDC deposit submitted. Cleanverse will issue aUSDC after indexing.");
+    if (amount > 5) {
+      throw new Error("Cleanverse faucet allows a maximum of 5 aUSDC per request.");
+    }
+
+    const hasAPass = await checkAPass({ quiet: true });
+    if (!hasAPass) {
+      throw new Error("This wallet needs an active A-Pass before using the faucet.");
+    }
+
+    walletNote.textContent = "Submitting faucet request to Cleanverse...";
+    const faucet = await request("/api/cleanverse/faucet", {
+      method: "POST",
+      body: JSON.stringify({
+        chain: "monad",
+        symbol: "ausdc",
+        depositAddress: connectedWallet,
+        amount,
+      }),
+    });
+
+    if (latestReceipt) {
+      latestReceipt.settlement.faucet = {
+        amount,
+        requestedAt: new Date().toISOString(),
+        response: faucet.data || faucet,
+      };
+      persistReceipt();
+    }
+
+    walletNote.textContent =
+      "Faucet request accepted. Refresh balances after Cleanverse processes it.";
+    showToast(`Requested ${amount} aUSDC from the Cleanverse faucet.`);
+    await refreshWalletState();
   } catch (error) {
-    showToast(error.message || "USDC deposit failed.");
+    walletNote.textContent = error.message || "Faucet request failed.";
+    showToast(error.message || "Faucet request failed.");
   }
 }
 
@@ -672,7 +892,7 @@ function renderTransaction(tx) {
   const fields = [
     ["Status", tx.status || "unknown"],
     ["Type", tx.type || "--"],
-    ["Amount", tx.amount || "--"],
+    ["Amount", formatTokenAmount(tx.amount, tx.symbol)],
     ["Symbol", tx.symbol || "--"],
     ["From", shortAddress(tx.from_address)],
     ["To", shortAddress(tx.to_address)],
@@ -798,12 +1018,20 @@ $("#switch-network").addEventListener("click", () =>
 $("#refresh-balances").addEventListener("click", () =>
   refreshWalletState().catch((error) => showToast(error.message)),
 );
-$("#deposit-usdc").addEventListener("click", depositUsdc);
+$("#request-faucet").addEventListener("click", requestFaucetAusdc);
 $("#send-payment").addEventListener("click", sendPayment);
 $("#lookup-transaction").addEventListener("click", lookupTransaction);
 openExplorerButton.addEventListener("click", openExplorer);
 getReportButton.addEventListener("click", getReport);
 checkAPassButton.addEventListener("click", () => checkAPass());
+refreshAPassButton.addEventListener("click", () => checkAPass());
+editAPassButton.addEventListener("click", () => {
+  showAPassForm();
+  apassStatus.textContent = "Editing";
+  apassStatus.classList.remove("status-live");
+  apassNote.textContent =
+    "The verified Cleanverse record is hidden while you prepare another registration attempt.";
+});
 apassForm.addEventListener("submit", generateAPass);
 workflowTabs.forEach((tab) =>
   tab.addEventListener("click", () => navigateToTab(tab.dataset.tab)),

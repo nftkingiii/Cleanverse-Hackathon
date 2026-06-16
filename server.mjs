@@ -188,6 +188,9 @@ async function handleApi(request, response, pathname) {
         await cleanverse.generateAPass(buildAPassPayload(body)),
       );
     }
+    if (pathname === "/api/cleanverse/apass/preview") {
+      return sendJson(response, 200, { payload: buildAPassPayload(body) });
+    }
     if (pathname === "/api/cleanverse/transactions") {
       return sendJson(response, 200, await cleanverse.queryTransactions(body));
     }
