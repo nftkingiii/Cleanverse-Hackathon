@@ -14,6 +14,7 @@ const settlementTitle = $("#settlement-title");
 const settlementNote = $("#settlement-note");
 const approveButton = $("#approve-button");
 const downloadButton = $("#download-receipt");
+const downloadPdfButton = $("#download-receipt-pdf");
 const apiStatus = $("#api-status");
 const connectWalletButton = $("#connect-wallet");
 const useWalletButton = $("#use-wallet");
@@ -692,12 +693,13 @@ function renderDecision(receipt) {
       ? "Transaction submitted"
       : evaluation.decision === "blocked"
         ? "Not authorized"
-        : "Prepared";
+      : "Prepared";
   walletNote.textContent =
     mode === "live"
       ? "Live mode may prepare a wallet transaction only after every compliance check passes."
       : "Demo mode never sends a real payment. Switch to Live sandbox for wallet execution.";
   downloadButton.disabled = false;
+  downloadPdfButton.disabled = false;
 }
 
 async function runAgent(event) {
@@ -976,6 +978,130 @@ function openExplorer() {
   }
 }
 
+function pdfEscape(value) {
+  return String(value)
+    .replaceAll("\\", "\\\\")
+    .replaceAll("(", "\\(")
+    .replaceAll(")", "\\)");
+}
+
+function receiptSummaryLines(receipt) {
+  const evaluation = receipt.evaluation || {};
+  const settlement = receipt.settlement || {};
+  const proposal = receipt.proposal || {};
+  const mandate = receipt.mandate || {};
+  const principal = receipt.trust?.principal || {};
+  const counterparty = receipt.trust?.counterparty || {};
+
+  return [
+    "ClearMandate Audit Receipt",
+    "",
+    `Run ID: ${receipt.runId || "receipt"}`,
+    `Created: ${receipt.createdAt || new Date().toISOString()}`,
+    `Mode: ${receipt.mode || "--"}`,
+    `Decision: ${evaluation.decision || "--"}`,
+    `Settlement status: ${settlement.status || "--"}`,
+    "",
+    "Mandate",
+    `Principal wallet: ${mandate.principalWallet || "--"}`,
+    `Limit: ${mandate.maxAmount ?? "--"} ${proposal.symbol || "aUSDC"}`,
+    `Approval threshold: ${mandate.approvalThreshold ?? "--"} ${proposal.symbol || "aUSDC"}`,
+    `Allowed categories: ${(mandate.allowedCategories || []).join(", ") || "--"}`,
+    `Approved vendors: ${(mandate.approvedVendors || []).join(", ") || "--"}`,
+    "",
+    "Proposal",
+    `Instruction: ${proposal.instruction || "--"}`,
+    `Vendor: ${proposal.vendor || "--"}`,
+    `Category: ${proposal.category || "--"}`,
+    `Amount: ${proposal.amount ?? "--"} ${proposal.symbol || "aUSDC"}`,
+    `Counterparty: ${proposal.counterpartyWallet || "--"}`,
+    "",
+    "Identity",
+    `Principal A-Pass: ${principal.message || principal.code || "--"}`,
+    `Counterparty A-Pass: ${counterparty.message || counterparty.code || "--"}`,
+    "",
+    "Policy Checks",
+    ...(evaluation.checks || []).map(
+      (check) => `${check.passed ? "PASS" : "BLOCK"} - ${check.label}: ${check.detail}`,
+    ),
+    "",
+    "Settlement Evidence",
+    `Payment tx: ${settlement.txHash || "--"}`,
+    `Deposit/faucet tx: ${settlement.depositTxHash || settlement.faucet?.response?.txHash || "--"}`,
+    `Cleanverse record: ${receipt.cleanverseTransaction?.tx_hash || "--"}`,
+  ];
+}
+
+function wrapPdfLine(line, maxLength = 92) {
+  const words = String(line).split(/\s+/);
+  const lines = [];
+  let current = "";
+  for (const word of words) {
+    if (!word) continue;
+    if ((current ? `${current} ${word}` : word).length <= maxLength) {
+      current = current ? `${current} ${word}` : word;
+    } else {
+      if (current) lines.push(current);
+      current = word.length > maxLength ? `${word.slice(0, maxLength - 1)}...` : word;
+    }
+  }
+  lines.push(current || " ");
+  return lines;
+}
+
+function buildReceiptPdf(receipt) {
+  const pageWidth = 612;
+  const pageHeight = 792;
+  const margin = 54;
+  const lineHeight = 14;
+  const maxLines = Math.floor((pageHeight - margin * 2) / lineHeight);
+  const wrapped = receiptSummaryLines(receipt).flatMap((line) =>
+    line ? wrapPdfLine(line) : [" "],
+  );
+  const pages = [];
+  for (let index = 0; index < wrapped.length; index += maxLines) {
+    pages.push(wrapped.slice(index, index + maxLines));
+  }
+
+  const objects = ["<< /Type /Catalog /Pages 2 0 R >>"];
+  const kids = pages.map((_, index) => `${4 + index * 2} 0 R`).join(" ");
+  objects.push(`<< /Type /Pages /Kids [${kids}] /Count ${pages.length} >>`);
+  objects.push("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>");
+
+  pages.forEach((pageLines, index) => {
+    const pageObjectNumber = 4 + index * 2;
+    const contentObjectNumber = pageObjectNumber + 1;
+    objects.push(
+      `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${pageWidth} ${pageHeight}] /Resources << /Font << /F1 3 0 R >> >> /Contents ${contentObjectNumber} 0 R >>`,
+    );
+    const streamLines = [
+      "BT",
+      "/F1 10 Tf",
+      "14 TL",
+      `${margin} ${pageHeight - margin} Td`,
+      ...pageLines.map((line) => `(${pdfEscape(line)}) Tj T*`),
+      "ET",
+    ];
+    const stream = streamLines.join("\n");
+    objects.push(`<< /Length ${stream.length} >>\nstream\n${stream}\nendstream`);
+  });
+
+  let pdf = "%PDF-1.4\n";
+  const offsets = [0];
+  objects.forEach((object, index) => {
+    offsets.push(pdf.length);
+    pdf += `${index + 1} 0 obj\n${object}\nendobj\n`;
+  });
+  const xrefOffset = pdf.length;
+  pdf += `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n`;
+  for (let index = 1; index < offsets.length; index += 1) {
+    pdf += `${String(offsets[index]).padStart(10, "0")} 00000 n \n`;
+  }
+  pdf += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF`;
+
+  return new Blob([pdf], { type: "application/pdf" });
+}
+
 function downloadReceipt() {
   if (!latestReceipt) return;
   const blob = new Blob([JSON.stringify(latestReceipt, null, 2)], {
@@ -985,6 +1111,18 @@ function downloadReceipt() {
   const link = document.createElement("a");
   link.href = url;
   link.download = `clearmandate-${latestReceipt.runId || "receipt"}.json`;
+  link.click();
+  URL.revokeObjectURL(url);
+  setStepComplete("evidence");
+}
+
+function downloadReceiptPdf() {
+  if (!latestReceipt) return;
+  const blob = buildReceiptPdf(latestReceipt);
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `clearmandate-${latestReceipt.runId || "receipt"}.pdf`;
   link.click();
   URL.revokeObjectURL(url);
   setStepComplete("evidence");
@@ -1012,6 +1150,7 @@ useWalletButton.addEventListener("click", () => {
 proposalForm.addEventListener("submit", runAgent);
 approveButton.addEventListener("click", approvePayment);
 downloadButton.addEventListener("click", downloadReceipt);
+downloadPdfButton.addEventListener("click", downloadReceiptPdf);
 $("#switch-network").addEventListener("click", () =>
   switchToMonad().catch((error) => showToast(error.message)),
 );

@@ -5,16 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="ClearMandate verified payment workspace." />
     <title>ClearMandate — App</title>
+    <link rel="icon" type="image/png" href="/clearmandate-mark.png" />
     <link rel="stylesheet" href="/styles.css" />
   </head>
   <body class="app-body">
     <div class="app-shell">
       <aside class="app-sidebar">
         <a class="brand app-brand" href="/" aria-label="ClearMandate home">
-          <span class="brand-mark">CM</span><span>ClearMandate</span>
+          <span class="brand-mark"><img src="/clearmandate-mark.png" alt="" /></span><span>ClearMandate</span>
         </a>
         <div class="sidebar-context">
-          <span class="context-icon">CM</span>
+          <span class="context-icon"><img src="/clearmandate-mark.png" alt="" /></span>
           <div><strong>Verified workspace</strong><span>Monad sandbox</span></div>
         </div>
         <p class="nav-label">Workflow</p>
@@ -146,7 +147,7 @@
                 </form>
               </div>
               <aside class="surface insight-surface">
-                <div class="identity-orbit"><span>CM</span></div>
+                <div class="identity-orbit"><span><img src="/clearmandate-mark.png" alt="" /></span></div>
                 <p class="eyebrow">Why this matters</p>
                 <h3>Trust begins with a verified principal.</h3>
                 <p>A-Pass lets the policy engine establish who delegated authority before any financial action is prepared.</p>
@@ -298,11 +299,14 @@
           <section class="tab-panel" data-panel="evidence">
             <div class="page-intro">
               <div><p class="eyebrow">06 / Evidence</p><h2>Export the decision trail</h2></div>
-              <button class="primary-button compact download-button" id="download-receipt" type="button" disabled><span>Download receipt</span><span class="button-icon">↓</span></button>
+              <div class="download-actions">
+                <button class="secondary-button compact-action download-button" id="download-receipt" type="button" disabled>Download JSON</button>
+                <button class="primary-button compact download-button" id="download-receipt-pdf" type="button" disabled><span>Download PDF</span><span class="button-icon">↓</span></button>
+              </div>
             </div>
             <div class="evidence-dashboard">
               <div class="surface evidence-score">
-                <div class="score-ring"><span>CM</span></div>
+                <div class="score-ring"><span><img src="/clearmandate-mark.png" alt="" /></span></div>
                 <p class="eyebrow">Evidence readiness</p>
                 <h3>One receipt, every control.</h3>
                 <p>The latest run gathers authorization, identity, policy, and settlement evidence in a portable JSON record.</p>
